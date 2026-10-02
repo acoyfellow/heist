@@ -25,7 +25,8 @@
 		"test": "bun test ./test",
 		"verify": "bun run check && bun run lint && bun run copy-check && bun run test && bun run build",
 		"copy-check": "bun scripts/copy-check.ts",
-		"deploy:prod": "vite build && wrangler d1 migrations apply heist --remote -c core/wrangler.prod.jsonc && wrangler deploy -c core/wrangler.prod.jsonc && wrangler deploy -c wrangler.prod.jsonc"
+		"deploy:prod": "vite build && wrangler d1 migrations apply heist --remote -c core/wrangler.prod.jsonc && wrangler deploy -c core/wrangler.prod.jsonc && wrangler deploy -c wrangler.prod.jsonc",
+		"deploy": "bun run build && wrangler deploy -c wrangler-button.jsonc && wrangler d1 migrations apply DB --remote -c wrangler-button.jsonc"
 	},
-	"description": "A prompt injection game: make VaultBot leak a code while Cloudflare Clef scores the message below 0.5."
+	"description": "A prompt injection game: get VaultBot, Meta's Llama 3.3 70B on Workers AI, to leak a vault code while Cloudflare Clef scores your message below 0.5."
 }

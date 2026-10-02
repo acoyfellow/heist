@@ -77,10 +77,10 @@ async function fire(): Promise<void> {
     {/each}
   </div>
 
-  <div class="relative z-30 mx-auto max-w-3xl px-4 py-10">
+  <div class="relative z-30 mx-auto max-w-3xl px-[max(1rem,env(safe-area-inset-left))] pt-[max(2.5rem,env(safe-area-inset-top))] pb-[max(2.5rem,env(safe-area-inset-bottom))]">
     <header class="flex flex-wrap items-center justify-between gap-3">
       <h1 class="text-4xl font-black tracking-widest text-yellow-300 drop-shadow-[0_0_10px_rgba(253,224,71,0.9)] sm:text-5xl">HEIST</h1>
-      <button class="border border-green-400 px-3 py-1 text-xs uppercase hover:bg-green-400 hover:text-black {focus}" aria-pressed={sound} onclick={() => (sound = !sound)}>
+      <button class="min-h-11 min-w-11 border border-green-400 px-3 py-1 text-xs uppercase hover:bg-green-400 hover:text-black {focus}" aria-pressed={sound} onclick={() => (sound = !sound)}>
         sound: {sound ? "on" : "off"}
       </button>
     </header>
@@ -95,7 +95,7 @@ async function fire(): Promise<void> {
 
     <form class="mt-8 border-2 border-green-500 bg-black/80 p-4 shadow-[0_0_24px_rgba(34,197,94,0.4)]" onsubmit={(e) => { e.preventDefault(); fire(); }}>
       <label for="handle" class="text-xs uppercase text-green-400">Handle (shown on the high scores)</label>
-      <input id="handle" bind:value={handle} maxlength="24" autocomplete="nickname" placeholder="HANDLE" class="mt-1 w-full border border-green-700 bg-black p-2 uppercase outline-none focus:border-yellow-300 {focus}" />
+      <input id="handle" bind:value={handle} maxlength="24" autocomplete="nickname" placeholder="HANDLE" class="mt-1 min-h-11 w-full border border-green-700 bg-black p-2 uppercase outline-none focus:border-yellow-300 {focus}" />
       <label for="attack" class="mt-3 block text-xs uppercase text-green-400">Message to VaultBot (up to 1200 characters, stored and public if it breaks in)</label>
       <textarea id="attack" bind:value={attack} maxlength="1200" rows="6" placeholder="Write your message to VaultBot..." class="mt-1 w-full border border-green-700 bg-black p-2 outline-none focus:border-yellow-300 {focus}"></textarea>
       <button
@@ -105,9 +105,9 @@ async function fire(): Promise<void> {
       >
         {busy ? "trying the lock..." : "attempt break-in"}
       </button>
-      <p class="mt-2 text-xs text-green-600">Limits: 30 attempts per hour from one address, 10 per minute, 3000 per day for the whole site.</p>
+      <p class="mt-2 text-xs text-green-600">Limits: 30 attempts per hour from one address and 3000 per day for the whole site.</p>
       <div aria-live="polite">
-        {#if busy}<p class="mt-2 text-green-400">Clef and VaultBot are reading your message. This can take up to 20 seconds.</p>{/if}
+        {#if busy}<p class="mt-2 text-green-400">Clef and VaultBot are reading your message. This can take a few seconds.</p>{/if}
         {#if error}<p role="alert" class="mt-2 text-red-400">{error}</p>{/if}
       </div>
     </form>
@@ -124,7 +124,7 @@ async function fire(): Promise<void> {
     <section class="mt-8 bg-black/60 p-2" aria-labelledby="scores">
       <div class="flex flex-wrap items-center justify-between gap-2">
         <h2 id="scores" class="text-xl font-bold text-yellow-300">HIGH SCORES</h2>
-        <a href="/api/dataset.jsonl" class="text-xs underline {focus}">Download break-in dataset (JSONL)</a>
+        <a href="/api/dataset.jsonl" class="inline-flex min-h-11 items-center text-xs underline {focus}">Download break-in dataset (JSONL)</a>
       </div>
       <ol class="mt-2">
         {#if board === null}
@@ -139,7 +139,7 @@ async function fire(): Promise<void> {
           {/each}
         {/if}
       </ol>
-      <p class="mt-2 text-xs text-green-600">Stealth is 100 minus the Clef score. Made by <a class="underline {focus}" href="https://coey.dev">Jordan Coeyman</a>.</p>
+      <p class="mt-2 text-xs text-green-600">Stealth is 100 minus the Clef score. Made by <a class="inline-flex min-h-11 items-center underline {focus}" href="https://coey.dev">Jordan Coeyman</a>.</p>
     </section>
   </div>
 </main>

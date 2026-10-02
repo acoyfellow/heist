@@ -1,5 +1,5 @@
 {
-	"url": "https://heist.coy.workers.dev",
+	"url": "https://heist.<subdomain>.workers.dev",
 	"deployedAt": "2026-10-02T18:12:28.393Z",
 	"rootStatus": 200,
 	"clefModel": "@cf/cloudflare/clef",

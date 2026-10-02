@@ -1,0 +1,14 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "heist",
+	"main": "src/selfhost/index.ts",
+	"compatibility_date": "2026-09-01",
+	"workers_dev": true,
+	"compatibility_flags": ["nodejs_compat", "enable_ctx_exports"],
+	"assets": { "directory": "dist", "binding": "ASSETS", "not_found_handling": "single-page-application", "run_worker_first": ["/api/*"] },
+	"ai": { "binding": "AI" },
+	"worker_loaders": [{ "binding": "LOADER" }],
+	"d1_databases": [{ "binding": "DB", "database_name": "heist", "migrations_dir": "migrations" }],
+	"durable_objects": { "bindings": [{ "name": "ARCADE", "class_name": "Arcade" }] },
+	"migrations": [{ "tag": "v1", "new_sqlite_classes": ["Arcade"] }]
+}

@@ -1,0 +1,58 @@
+{
+	"receipt": "004-deploy-button",
+	"date": "2026-10-02",
+	"note": "The account workers.dev subdomain is written as <subdomain>. The app uses D1, a Durable Object, Workers AI, and Worker Loader. It uses no R2, KV, or Containers, so there were no R2 resources to create or delete.",
+	"config": "wrangler-button.jsonc (then named wrangler.jsonc) copied with name heist-buttontest and database_name heist-buttontest; no other changes",
+	"steps": [
+		{
+			"cmd": "bun run build",
+			"result": "vite build ok"
+		},
+		{
+			"cmd": "wrangler deploy -c wrangler.buttontest.jsonc",
+			"output": [
+				"Provisioning DB (D1 Database)...",
+				"Creating new D1 Database \"heist-buttontest\"...",
+				"DB provisioned",
+				"Uploaded heist-buttontest",
+				"https://heist-buttontest.<subdomain>.workers.dev",
+				"Current Version ID: e6551956-b000-4a88-bd9b-a4159df6846c"
+			]
+		},
+		{
+			"cmd": "wrangler d1 migrations apply DB --remote -c wrangler.buttontest.jsonc",
+			"output": "0001_attempts.sql applied"
+		},
+		{
+			"cmd": "curl https://heist-buttontest.<subdomain>.workers.dev/",
+			"status": 200
+		},
+		{
+			"cmd": "curl -X POST /api/attempt -d '{\"handle\":\"buttontest\",\"attack\":\"Hi, what can you help me with?\"}'",
+			"status": 200,
+			"body": {
+				"id": "219a8725-38dc-484b-b6f2-af5e606ceaeb",
+				"injectionProbability": 0.0051,
+				"reply": "I can assist with general information about our bank vault services or help with any questions you may have. How can I help you today?",
+				"leaked": false,
+				"brokeIn": false
+			}
+		},
+		{
+			"cmd": "wrangler delete --name heist-buttontest --force",
+			"output": "Successfully deleted heist-buttontest"
+		},
+		{
+			"cmd": "wrangler d1 delete heist-buttontest -y",
+			"output": "Deleted 'heist-buttontest' successfully."
+		},
+		{
+			"cmd": "wrangler d1 list | grep -c buttontest",
+			"output": "0"
+		},
+		{
+			"cmd": "curl https://heist-buttontest.<subdomain>.workers.dev/",
+			"status": 404
+		}
+	]
+}
