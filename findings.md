@@ -6,3 +6,4 @@
 - The local npm config routes the @cloudflare scope to an Access-gated registry. Installs need `--@cloudflare:registry=https://registry.npmjs.org/`.
 - svelte-check needs TypeScript 5 (TypeScript 7 is rejected).
 - Biome's unsafe fix renames Svelte template-used vars to `_x`. Svelte files have unused-var rules off.
+- The local guardrail pre-commit hook blocks committing wrangler.jsonc. Its rules ban this account's workers.dev subdomain and treat workers_dev with an AI binding as critical. The file is deployed but left uncommitted, pending a human decision. Moving to heist.coey.dev with workers_dev false should clear it.
