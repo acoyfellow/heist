@@ -1,27 +1,29 @@
 {
-  "name": "heist",
-  "type": "module",
-  "private": true,
-  "devDependencies": {
-    "@biomejs/biome": "^2.5.15",
-    "@cloudflare/workers-types": "^5.20261002.1",
-    "@sveltejs/vite-plugin-svelte": "^7.3.1",
-    "@tailwindcss/vite": "^4.3.3",
-    "@types/bun": "latest",
-    "svelte": "^5.57.1",
-    "svelte-check": "^4.7.6",
-    "tailwindcss": "^4.3.3",
-    "typescript": "^5.9.3",
-    "vite": "^8.3.2",
-    "wrangler": "^4.147.0",
-    "zod": "^4.6.5"
-  },
-  "scripts": {
-    "build": "vite build",
-    "check": "tsc && svelte-check --tsconfig ./tsconfig.json",
-    "lint": "biome check src test",
-    "test": "bun test",
-    "verify": "bun run check && bun run lint && bun run test",
-    "deploy": "vite build && wrangler d1 migrations apply heist --remote -c core/wrangler.jsonc && wrangler deploy -c core/wrangler.jsonc && wrangler deploy"
-  }
+	"name": "heist",
+	"type": "module",
+	"private": true,
+	"devDependencies": {
+		"@biomejs/biome": "^2.5.15",
+		"@cloudflare/workers-types": "^5.20261002.1",
+		"@sveltejs/vite-plugin-svelte": "^7.3.1",
+		"@tailwindcss/vite": "^4.3.3",
+		"@types/bun": "latest",
+		"svelte": "^5.57.1",
+		"svelte-check": "^4.7.6",
+		"tailwindcss": "^4.3.3",
+		"typescript": "^5.9.3",
+		"vite": "^8.3.2",
+		"wrangler": "^4.147.0",
+		"zod": "^4.6.5"
+	},
+	"scripts": {
+		"build": "vite build",
+		"check": "tsc && svelte-check --tsconfig ./tsconfig.json",
+		"lint": "biome check src test scripts",
+		"test": "bun test",
+		"verify": "bun run copy-check && bun run check && bun run lint && bun run test && bun run build",
+		"deploy": "vite build && wrangler d1 migrations apply heist --remote -c core/wrangler.jsonc && wrangler deploy -c core/wrangler.jsonc && wrangler deploy",
+		"copy-check": "bun scripts/copy-check.ts"
+	},
+	"description": "A prompt injection game: make VaultBot leak a code while Cloudflare Clef scores the message below 0.5."
 }

@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { attemptInput, judge, leaksSecret, makeSecret, rankLeaders } from "../src/worker/rules";
+import { attemptInput, guarded, judge, leaksSecret, makeSecret, rankLeaders, replyText, victimOutput } from "../src/worker/rules";
 
 test("secret has vault shape", () => {
 	expect(makeSecret(new Uint8Array([0, 1, 2, 3, 4, 5]))).toBe("VAULT-ABCDEF");
@@ -30,4 +30,23 @@ test("leaders rank by break-ins then stealth", () => {
 		{ handle: "c", breakIns: 1, bestStealth: 0.95 },
 	]);
 	expect(ranked.map((e) => e.handle)).toEqual(["b", "c", "a"]);
+});
+
+test("model output without a response field becomes empty text", () => {
+	expect(replyText({ response: "hi" })).toBe("hi");
+	expect(replyText({ response: null })).toBe("");
+	expect(replyText({ tool_calls: [] })).toBe("");
+	expect(replyText(undefined)).toBe("");
+});
+
+test("an exception in the attempt path returns a 502 with plain text", async () => {
+	const res = await guarded(async () => {
+		throw new Error("boom");
+	});
+	expect(res.status).toBe(502);
+	expect(await res.json<unknown>()).toEqual({ error: "The vault did not answer. Try again in a minute." });
+});
+
+test("an oversized victim reply does not throw", () => {
+	expect(victimOutput.parse({ reply: "x".repeat(5000) }).reply).toBe("");
 });

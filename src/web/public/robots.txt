@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://heist.coey.dev/sitemap.xml

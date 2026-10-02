@@ -9,6 +9,7 @@ import {
 	clefOutput,
 	dayWindow,
 	GLOBAL_ATTEMPTS_PER_DAY,
+	guarded,
 	hourWindow,
 	judge,
 	type LeaderEntry,
@@ -16,6 +17,8 @@ import {
 	leaksSecret,
 	makeSecret,
 	rankLeaders,
+	replyText,
+	VICTIM_MODEL,
 	victimOutput,
 } from "./rules";
 import { VICTIM_SOURCE } from "./victim";
@@ -28,22 +31,22 @@ interface Env {
 }
 
 const gateway = { gateway: { id: "default" } };
-const llmOutput = z.object({ response: z.string() });
 
 export class Brain extends WorkerEntrypoint<Env> {
 	async complete(system: string, user: string): Promise<string> {
 		const raw = await this.env.AI.run(
-			"@cf/meta/llama-3.1-8b-instruct-fast",
+			VICTIM_MODEL,
 			{
 				messages: [
 					{ role: "system", content: system },
 					{ role: "user", content: user },
 				],
-				max_tokens: 200,
+				max_tokens: 300,
+				temperature: 0.2,
 			},
 			gateway,
 		);
-		return llmOutput.parse(raw).response;
+		return replyText(raw);
 	}
 }
 
@@ -103,7 +106,8 @@ async function runVictim(env: Env, ctx: ExecutionContext, attack: string, secret
 		method: "POST",
 		body: JSON.stringify({ attack, secret }),
 	});
-	return victimOutput.parse(await response.json()).reply;
+	const parsed = victimOutput.safeParse(await response.json().catch(() => null));
+	return parsed.success ? parsed.data.reply : "";
 }
 
 async function attempt(env: Env, ctx: ExecutionContext, input: AttemptInput): Promise<AttemptResult> {
@@ -154,22 +158,26 @@ async function exportDataset(env: Env): Promise<Response> {
 
 async function handleAttempt(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
 	const parsed = attemptInput.safeParse(await request.json().catch(() => null));
-	if (!parsed.success) return Response.json({ error: "invalid attempt" }, { status: 400 });
+	if (!parsed.success)
+		return Response.json(
+			{ error: "Enter a handle (letters, numbers, spaces, - or _, up to 24) and a message up to 1200 characters." },
+			{ status: 400 },
+		);
 	const ip = request.headers.get("cf-connecting-ip") ?? "unknown";
 	const now = Date.now();
 	const perIp = await env.ARCADE.getByName(`ip:${ip}`).take(`h:${hourWindow(now)}`, ATTEMPTS_PER_IP_PER_HOUR);
-	if (!perIp) return Response.json({ error: "rate limited: 30 attempts per hour" }, { status: 429 });
+	if (!perIp) return Response.json({ error: "Limit reached: 30 attempts per hour from one address. Try again later." }, { status: 429 });
 	const global = await env.ARCADE.getByName("budget").take(`d:${dayWindow(now)}`, GLOBAL_ATTEMPTS_PER_DAY);
-	if (!global) return Response.json({ error: "daily budget spent, come back tomorrow" }, { status: 429 });
+	if (!global) return Response.json({ error: "The daily limit of 3000 attempts is used. Try again tomorrow." }, { status: 429 });
 	return Response.json(await attempt(env, ctx, parsed.data));
 }
 
 export default {
 	async fetch(request, env, ctx): Promise<Response> {
 		const url = new URL(request.url);
-		if (url.pathname === "/api/attempt" && request.method === "POST") return handleAttempt(request, env, ctx);
-		if (url.pathname === "/api/leaderboard") return Response.json(await env.ARCADE.getByName("leaderboard").board());
-		if (url.pathname === "/api/dataset.jsonl") return exportDataset(env);
+		if (url.pathname === "/api/attempt" && request.method === "POST") return guarded(() => handleAttempt(request, env, ctx));
+		if (url.pathname === "/api/leaderboard") return guarded(async () => Response.json(await env.ARCADE.getByName("leaderboard").board()));
+		if (url.pathname === "/api/dataset.jsonl") return guarded(() => exportDataset(env));
 		return Response.json({ error: "not found" }, { status: 404 });
 	},
 } satisfies ExportedHandler<Env>;

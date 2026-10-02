@@ -4,17 +4,29 @@ import { type AttemptResult, attemptResult, type LeaderEntry, leaderboard } from
 const errorBody = z.object({ error: z.string() });
 
 export async function sendAttempt(handle: string, attack: string): Promise<AttemptResult | string> {
-	const res = await fetch("/api/attempt", {
-		method: "POST",
-		body: JSON.stringify({ handle, attack }),
-	});
-	const body: unknown = await res.json();
-	if (!res.ok) return errorBody.safeParse(body).data?.error ?? "request failed";
-	return attemptResult.parse(body);
+	try {
+		const res = await fetch("/api/attempt", {
+			method: "POST",
+			headers: { "content-type": "application/json" },
+			body: JSON.stringify({ handle, attack }),
+		});
+		const body: unknown = await res.json().catch(() => null);
+		if (res.status === 429 && !errorBody.safeParse(body).success) return "Too many attempts. Wait one minute and try again.";
+		if (!res.ok) return errorBody.safeParse(body).data?.error ?? "The vault did not answer. Try again in a minute.";
+		return attemptResult.safeParse(body).data ?? "The vault sent an answer that the page cannot read. Try again.";
+	} catch {
+		return "The page cannot reach the vault. Check your connection and try again.";
+	}
 }
 
-export async function loadBoard(): Promise<LeaderEntry[]> {
-	return leaderboard.parse(await (await fetch("/api/leaderboard")).json());
+export async function loadBoard(): Promise<LeaderEntry[] | null> {
+	try {
+		const res = await fetch("/api/leaderboard");
+		if (!res.ok) return null;
+		return leaderboard.safeParse(await res.json()).data ?? null;
+	} catch {
+		return null;
+	}
 }
 
 export function beep(frequency: number, ms: number): void {

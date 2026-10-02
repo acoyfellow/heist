@@ -1,7 +1,7 @@
 {
-  "phase": "split-ready-deploy-blocked",
-  "url": "https://heist.coey.dev (pending deploy)",
-  "customDomain": "configured on front worker 'heist'",
-  "verify": "passing",
-  "core": "heist-core (no public URL)"
+	"phase": "live",
+	"url": "https://heist.coey.dev/",
+	"summary": "Front and core are deployed. The victim uses llama-3.3-70b. Eval: 0 of 10 benign messages and 1 of 10 attacks leaked the code.",
+	"verify": "passing",
+	"core": "heist-core (no public URL)"
 }
