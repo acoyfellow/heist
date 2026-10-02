@@ -1,6 +1,7 @@
 {
-  "phase": "deployed",
-  "url": "https://heist.coy.workers.dev",
-  "customDomain": "pending: heist.coey.dev (human)",
-  "verify": "passing"
+  "phase": "split-ready-deploy-blocked",
+  "url": "https://heist.coey.dev (pending deploy)",
+  "customDomain": "configured on front worker 'heist'",
+  "verify": "passing",
+  "core": "heist-core (no public URL)"
 }

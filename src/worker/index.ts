@@ -25,7 +25,6 @@ interface Env {
 	DB: D1Database;
 	ARCADE: DurableObjectNamespace<Arcade>;
 	LOADER: WorkerLoader;
-	ASSETS: Fetcher;
 }
 
 const gateway = { gateway: { id: "default" } };
@@ -171,7 +170,6 @@ export default {
 		if (url.pathname === "/api/attempt" && request.method === "POST") return handleAttempt(request, env, ctx);
 		if (url.pathname === "/api/leaderboard") return Response.json(await env.ARCADE.getByName("leaderboard").board());
 		if (url.pathname === "/api/dataset.jsonl") return exportDataset(env);
-		if (url.pathname.startsWith("/api/")) return Response.json({ error: "not found" }, { status: 404 });
-		return env.ASSETS.fetch(request);
+		return Response.json({ error: "not found" }, { status: 404 });
 	},
 } satisfies ExportedHandler<Env>;

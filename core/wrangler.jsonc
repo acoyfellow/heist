@@ -1,0 +1,14 @@
+{
+  "name": "heist-core",
+  "main": "../src/worker/index.ts",
+  "compatibility_date": "2026-09-01",
+  "compatibility_flags": ["nodejs_compat", "enable_ctx_exports"],
+  "account_id": "bfcb6ac5b3ceaf42a09607f6f7925823",
+  "workers_dev": false,
+  "preview_urls": false,
+  "ai": { "binding": "AI" },
+  "worker_loaders": [{ "binding": "LOADER" }],
+  "d1_databases": [{ "binding": "DB", "database_name": "heist", "database_id": "093f97d4-9b6c-4529-b448-f71e14c6a8d8", "migrations_dir": "../migrations" }],
+  "durable_objects": { "bindings": [{ "name": "ARCADE", "class_name": "Arcade" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Arcade"] }]
+}

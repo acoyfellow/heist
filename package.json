@@ -22,6 +22,6 @@
     "lint": "biome check src test",
     "test": "bun test",
     "verify": "bun run check && bun run lint && bun run test",
-    "deploy": "vite build && wrangler d1 migrations apply heist --remote && wrangler deploy"
+    "deploy": "vite build && wrangler d1 migrations apply heist --remote -c core/wrangler.jsonc && wrangler deploy -c core/wrangler.jsonc && wrangler deploy"
   }
 }

@@ -1,0 +1,10 @@
+{
+  "status": "blocked",
+  "reason": "Cloudflare API code 10429 rate limit on PUT workers/services/heist-core, repeated for ~25 min (parallel deploys on the account)",
+  "a_guardrail": "no CRITICAL; warnings: custom route + service binding CORE on front, missing npm registry scope file (agent tooling refused to write it)",
+  "b_verify": "pass: 5 tests, tsc, svelte-check, biome",
+  "c_custom_domain": "not deployed",
+  "d_e2e_clef": "not run",
+  "e_core_private": "heist-core not deployed; workers_dev false, preview_urls false, no routes",
+  "next": "bun run deploy"
+}

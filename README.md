@@ -23,3 +23,9 @@ bun run deploy
 ```
 
 Live at https://heist.coy.workers.dev. The custom domain heist.coey.dev is still pending.
+
+## Topology
+
+- `heist` (wrangler.jsonc, src/front): public front on https://heist.coey.dev. Assets, per-IP ratelimits, one service binding `CORE`.
+- `heist-core` (core/wrangler.jsonc, src/worker): AI, D1, Durable Objects, Worker Loader. workers_dev and preview_urls off, no routes.
+- Deploy: `bun run deploy` (core first, then front).
