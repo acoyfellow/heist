@@ -2,3 +2,10 @@ node_modules
 dist
 .wrangler
 .guardrail
+.pi
+.cursor
+.vscode
+.idea
+.DS_Store
+*.swp
+.dev.vars

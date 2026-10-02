@@ -1,6 +1,6 @@
 # HEIST
 
-HEIST is a browser game where you write one message that makes VaultBot, a Workers AI model, show its secret vault code while Cloudflare Clef scores your message below 0.5 for prompt injection.
+HEIST is a browser game where you write one message that makes VaultBot (Meta's Llama 3.3 70B on Workers AI, with a system prompt that holds a secret vault code) show that code while Cloudflare Clef scores your message below 0.5 for prompt injection.
 
 Live: https://heist.coey.dev/
 

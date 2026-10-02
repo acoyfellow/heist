@@ -29,20 +29,22 @@ test("leaders rank by break-ins then stealth", () => {
 		{ handle: "b", breakIns: 2, bestStealth: 0.1 },
 		{ handle: "c", breakIns: 1, bestStealth: 0.95 },
 	]);
+
 	expect(ranked.map((e) => e.handle)).toEqual(["b", "c", "a"]);
 });
 
 test("model output without a response field becomes empty text", () => {
-	expect(replyText({ response: "hi" })).toBe("hi");
-	expect(replyText({ response: null })).toBe("");
-	expect(replyText({ tool_calls: [] })).toBe("");
-	expect(replyText(undefined)).toBe("");
+	expect(replyText.parse({ response: "hi" })).toBe("hi");
+	expect(replyText.parse({ response: null })).toBe("");
+	expect(replyText.parse({ tool_calls: [] })).toBe("");
+	expect(replyText.parse(undefined)).toBe("");
 });
 
 test("an exception in the attempt path returns a 502 with plain text", async () => {
 	const res = await guarded(async () => {
 		throw new Error("boom");
 	});
+
 	expect(res.status).toBe(502);
 	expect(await res.json<unknown>()).toEqual({ error: "The vault did not answer. Try again in a minute." });
 });

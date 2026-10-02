@@ -36,7 +36,9 @@ const bannedPhrases = [
 function sourceFiles(dir: string): string[] {
 	return readdirSync(dir).flatMap((name) => {
 		const path = join(dir, name);
+
 		if (statSync(path).isDirectory()) return sourceFiles(path);
+
 		return /\.(svelte|ts)$/.test(name) ? [path] : [];
 	});
 }
@@ -47,14 +49,21 @@ function hitsIn(path: string): string[] {
 		.flatMap((line, index) => {
 			const lower = line.toLowerCase().replaceAll("\u2019", "'");
 			const found = bannedPhrases.filter((phrase) => lower.includes(phrase));
+
 			if (line.includes(ARROW)) found.push("arrow U+2192");
+
 			return found.map((phrase) => `${path}:${index + 1}: ${phrase}`);
 		});
 }
 
 const selfPath = "scripts/copy-check.ts";
+
 const files = ["README.md", "index.html", ...sourceFiles("src")].filter((path) => path !== selfPath);
+
 const hits = files.flatMap(hitsIn);
+
 for (const hit of hits) console.error(hit);
+
 if (hits.length > 0) process.exit(1);
+
 console.log(`copy-check: ${files.length} files clean`);

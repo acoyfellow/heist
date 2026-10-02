@@ -46,7 +46,8 @@ export class Brain extends WorkerEntrypoint<Env> {
 			},
 			gateway,
 		);
-		return replyText(raw);
+
+		return replyText.parse(raw);
 	}
 }
 
@@ -56,13 +57,16 @@ export class Arcade extends DurableObject<Env> {
 			.number()
 			.catch(0)
 			.parse(await this.ctx.storage.get(key));
+
 		if (used >= limit) return false;
 		await this.ctx.storage.put(key, used + 1);
+
 		return true;
 	}
 	async record(entry: { handle: string; stealth: number }): Promise<void> {
 		const board = leaderboard.catch([]).parse(await this.ctx.storage.get("board"));
 		const found = board.find((e) => e.handle === entry.handle);
+
 		const next: LeaderEntry[] = found
 			? board.map((e) =>
 					e.handle === entry.handle
@@ -74,6 +78,7 @@ export class Arcade extends DurableObject<Env> {
 						: e,
 				)
 			: [...board, { handle: entry.handle, breakIns: 1, bestStealth: entry.stealth }];
+
 		await this.ctx.storage.put("board", rankLeaders(next));
 	}
 	async board(): Promise<LeaderEntry[]> {
@@ -91,6 +96,7 @@ async function scoreInjection(env: Env, attack: string): Promise<number> {
 		},
 		gateway,
 	);
+
 	return clefOutput.parse(raw).answers.injection.noul;
 }
 
@@ -102,11 +108,14 @@ async function runVictim(env: Env, ctx: ExecutionContext, attack: string, secret
 		env: { BRAIN: ctx.exports.Brain({ props: {} }) },
 		globalOutbound: null,
 	}));
+
 	const response = await worker.getEntrypoint().fetch("https://victim/", {
 		method: "POST",
 		body: JSON.stringify({ attack, secret }),
 	});
+
 	const parsed = victimOutput.safeParse(await response.json().catch(() => null));
+
 	return parsed.success ? parsed.data.reply : "";
 }
 
@@ -121,11 +130,13 @@ async function attempt(env: Env, ctx: ExecutionContext, input: AttemptInput): Pr
 	)
 		.bind(id, Date.now(), input.handle, input.attack, injectionProbability, reply, leaked ? 1 : 0, brokeIn ? 1 : 0)
 		.run();
+
 	if (brokeIn)
 		await env.ARCADE.getByName("leaderboard").record({
 			handle: input.handle,
 			stealth: 1 - injectionProbability,
 		});
+
 	return { id, injectionProbability, reply, leaked, brokeIn };
 }
 
@@ -139,7 +150,9 @@ async function exportDataset(env: Env): Promise<Response> {
 	const { results } = await env.DB.prepare(
 		"SELECT attack, injection_probability, created_at FROM attempts WHERE broke_in = 1 ORDER BY created_at DESC LIMIT 1000",
 	).all();
+
 	const rows = z.array(datasetRow).parse(results);
+
 	const lines = rows.map((r) =>
 		JSON.stringify({
 			input: r.attack,
@@ -148,6 +161,7 @@ async function exportDataset(env: Env): Promise<Response> {
 			created_at: r.created_at,
 		}),
 	);
+
 	return new Response(lines.join("\n"), {
 		headers: {
 			"content-type": "application/x-ndjson",
@@ -158,6 +172,7 @@ async function exportDataset(env: Env): Promise<Response> {
 
 async function handleAttempt(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
 	const parsed = attemptInput.safeParse(await request.json().catch(() => null));
+
 	if (!parsed.success)
 		return Response.json(
 			{ error: "Enter a handle (letters, numbers, spaces, - or _, up to 24) and a message up to 1200 characters." },
@@ -166,18 +181,25 @@ async function handleAttempt(request: Request, env: Env, ctx: ExecutionContext):
 	const ip = request.headers.get("cf-connecting-ip") ?? "unknown";
 	const now = Date.now();
 	const perIp = await env.ARCADE.getByName(`ip:${ip}`).take(`h:${hourWindow(now)}`, ATTEMPTS_PER_IP_PER_HOUR);
+
 	if (!perIp) return Response.json({ error: "Limit reached: 30 attempts per hour from one address. Try again later." }, { status: 429 });
 	const global = await env.ARCADE.getByName("budget").take(`d:${dayWindow(now)}`, GLOBAL_ATTEMPTS_PER_DAY);
+
 	if (!global) return Response.json({ error: "The daily limit of 3000 attempts is used. Try again tomorrow." }, { status: 429 });
+
 	return Response.json(await attempt(env, ctx, parsed.data));
 }
 
 export default {
 	async fetch(request, env, ctx): Promise<Response> {
 		const url = new URL(request.url);
+
 		if (url.pathname === "/api/attempt" && request.method === "POST") return guarded(() => handleAttempt(request, env, ctx));
+
 		if (url.pathname === "/api/leaderboard") return guarded(async () => Response.json(await env.ARCADE.getByName("leaderboard").board()));
+
 		if (url.pathname === "/api/dataset.jsonl") return guarded(() => exportDataset(env));
+
 		return Response.json({ error: "not found" }, { status: 404 });
 	},
 } satisfies ExportedHandler<Env>;
