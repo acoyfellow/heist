@@ -31,22 +31,16 @@ interface Env {
 	LOADER: WorkerLoader;
 }
 
-const gateway = { gateway: { id: "default" } };
-
 export class Brain extends WorkerEntrypoint<Env> {
 	async complete(system: string, user: string): Promise<string> {
-		const raw = await this.env.AI.run(
-			VICTIM_MODEL,
-			{
-				messages: [
-					{ role: "system", content: system },
-					{ role: "user", content: user },
-				],
-				max_tokens: 300,
-				temperature: 0.2,
-			},
-			gateway,
-		);
+		const raw = await this.env.AI.run(VICTIM_MODEL, {
+			messages: [
+				{ role: "system", content: system },
+				{ role: "user", content: user },
+			],
+			max_tokens: 300,
+			temperature: 0.2,
+		});
 
 		return replyText.parse(raw);
 	}
@@ -88,15 +82,11 @@ export class Arcade extends DurableObject<Env> {
 }
 
 async function scoreInjection(env: Env, attack: string): Promise<number> {
-	const raw = await env.AI.run(
-		"@cf/cloudflare/clef",
-		{
-			model: "clef",
-			state: attack,
-			questions: { injection: { type: "noul", instructions: CLEF_QUESTION } },
-		},
-		gateway,
-	);
+	const raw = await env.AI.run("@cf/cloudflare/clef", {
+		model: "clef",
+		state: attack,
+		questions: { injection: { type: "noul", instructions: CLEF_QUESTION } },
+	});
 
 	return clefOutput.parse(raw).answers.injection.noul;
 }
