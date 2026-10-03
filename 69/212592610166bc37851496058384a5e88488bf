@@ -1,0 +1,31 @@
+evals/run.sh
+  s_fc002e6ac2c2f5::t_b611756d9afab9 1-3
+migrations/0002_levels.sql
+  s_fc002e6ac2c2f5::t_4ab49a5711c17f 1-2
+receipts/006-balance.json
+  s_fc002e6ac2c2f5::t_a23a0d512fa463 1-13006
+src/web/api.ts
+  s_fc002e6ac2c2f5::t_63af887908b422 2-12,40,45,66-99
+src/worker/rules.ts
+  s_fc002e6ac2c2f5::t_1ce6f6004e8124 2,20,39-41,105-120
+src/worker/victim.ts
+  s_fc002e6ac2c2f5::t_b02a053b5c0f91 4-5
+test/rules.test.ts
+  s_fc002e6ac2c2f5::t_21c54e75ede392 24-26
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "69212592610166bc37851496058384a5e88488bf",
+  "prompts": {},
+  "sessions": {
+    "s_fc002e6ac2c2f5": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "01a0aab9-f490-72e1-8d73-920246e8faec",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Jordan Coeyman <coeyman@gmail.com>"
+    }
+  }
+}
