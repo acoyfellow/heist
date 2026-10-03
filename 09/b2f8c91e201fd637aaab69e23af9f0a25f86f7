@@ -1,0 +1,19 @@
+src/worker/index.ts
+  s_5f86db03525984::t_68ee99ea4f7fc8 36-43,85-89
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "09b2f8c91e201fd637aaab69e23af9f0a25f86f7",
+  "prompts": {},
+  "sessions": {
+    "s_5f86db03525984": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "01a0f8ed-6d1c-75dc-a1fe-8dce6a49abbc",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Jordan Coeyman <coeyman@gmail.com>"
+    }
+  }
+}
