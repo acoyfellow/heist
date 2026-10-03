@@ -1,0 +1,14 @@
+{
+	"receipt": "005-prod-deploy",
+	"date": "2026-10-02",
+	"status": "blocked",
+	"command": "bun run deploy:prod",
+	"error": "Authentication error [code: 10000]; wrangler: auth token has expired and could not be refreshed, and the environment is non-interactive",
+	"liveBuild": "previous build (receipt 003). /manifest.webmanifest and /sw.js return 200 but serve the SPA index.html until the new build deploys.",
+	"lighthouse": {
+		"file": "receipts/lighthouse-mobile.json",
+		"target": "https://heist.coey.dev (previous build)",
+		"scores": { "seo": 100, "accessibility": 100, "best-practices": 100 }
+	},
+	"next": "Run wrangler login, then bun run deploy:prod, then rerun Lighthouse."
+}
