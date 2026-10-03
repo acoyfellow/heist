@@ -1,0 +1,19 @@
+receipts/005-adversarial-review.json
+  s_fc002e6ac2c2f5::t_102640538c59b8 1-294
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "d4050ef232d838f55e5e6b94141d35e36048a94b",
+  "prompts": {},
+  "sessions": {
+    "s_fc002e6ac2c2f5": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "01a0aab9-f490-72e1-8d73-920246e8faec",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Jordan Coeyman <coeyman@gmail.com>"
+    }
+  }
+}
