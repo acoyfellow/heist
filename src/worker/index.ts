@@ -7,6 +7,7 @@ import {
 	attemptInput,
 	CLEF_QUESTION,
 	clefOutput,
+	datasetLine,
 	dayWindow,
 	GLOBAL_ATTEMPTS_PER_DAY,
 	guarded,
@@ -153,14 +154,7 @@ async function exportDataset(env: Env): Promise<Response> {
 
 	const rows = z.array(datasetRow).parse(results);
 
-	const lines = rows.map((r) =>
-		JSON.stringify({
-			input: r.attack,
-			label: "prompt_injection",
-			clef_injection_probability: r.injection_probability,
-			created_at: r.created_at,
-		}),
-	);
+	const lines = rows.map(datasetLine);
 
 	return new Response(lines.join("\n"), {
 		headers: {

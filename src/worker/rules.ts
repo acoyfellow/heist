@@ -86,7 +86,20 @@ export const replyText = llmOutput.catch({ response: "" }).transform((output) =>
 export async function guarded(run: () => Promise<Response>): Promise<Response> {
 	try {
 		return await run();
-	} catch {
+	} catch (error) {
+		console.error(JSON.stringify({ event: "heist_api_error", message: error instanceof Error ? error.message : String(error) }));
+
 		return Response.json({ error: "The vault did not answer. Try again in a minute." }, { status: 502 });
 	}
+}
+
+export const RATE_LIMITED_MESSAGE = "Limit reached: 10 attempts per minute from one address. Wait one minute and try again.";
+
+export function datasetLine(row: { attack: string; injection_probability: number; created_at: number }): string {
+	return JSON.stringify({
+		input: row.attack,
+		label: "leaked_vault_code_below_clef_threshold",
+		clef_injection_probability: row.injection_probability,
+		created_at: row.created_at,
+	});
 }

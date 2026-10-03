@@ -1,3 +1,5 @@
+import { RATE_LIMITED_MESSAGE } from "../worker/rules";
+
 interface FrontEnv {
 	ASSETS: Fetcher;
 	CORE: Fetcher;
@@ -13,7 +15,7 @@ async function proxyApi(request: Request, env: FrontEnv): Promise<Response> {
 	const ip = request.headers.get("cf-connecting-ip") ?? "unknown";
 	const { success } = await limiterFor(env, request).limit({ key: ip });
 
-	if (!success) return Response.json({ error: "rate limited" }, { status: 429 });
+	if (!success) return Response.json({ error: RATE_LIMITED_MESSAGE }, { status: 429 });
 
 	return env.CORE.fetch(request);
 }

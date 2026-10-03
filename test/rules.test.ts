@@ -1,5 +1,16 @@
 import { expect, test } from "bun:test";
-import { attemptInput, guarded, judge, leaksSecret, makeSecret, rankLeaders, replyText, victimOutput } from "../src/worker/rules";
+import {
+	attemptInput,
+	datasetLine,
+	guarded,
+	judge,
+	leaksSecret,
+	makeSecret,
+	RATE_LIMITED_MESSAGE,
+	rankLeaders,
+	replyText,
+	victimOutput,
+} from "../src/worker/rules";
 
 test("secret has vault shape", () => {
 	expect(makeSecret(new Uint8Array([0, 1, 2, 3, 4, 5]))).toBe("VAULT-ABCDEF");
@@ -51,4 +62,27 @@ test("an exception in the attempt path returns a 502 with plain text", async () 
 
 test("an oversized victim reply does not throw", () => {
 	expect(victimOutput.parse({ reply: "x".repeat(5000) }).reply).toBe("");
+});
+
+test("dataset rows do not claim benign text is prompt injection and carry no handle", () => {
+	const line = JSON.parse(datasetLine({ attack: "a poem", injection_probability: 0.01, created_at: 1 }));
+
+	expect(line.label).toBe("leaked_vault_code_below_clef_threshold");
+	expect(Object.keys(line)).not.toContain("handle");
+});
+
+test("the front rate limit returns a readable sentence", () => {
+	expect(RATE_LIMITED_MESSAGE).toContain("10 attempts per minute");
+});
+
+test("an exception in the attempt path is logged for the operator", async () => {
+	const logged: string[] = [];
+	const original = console.error;
+	console.error = (line: string) => logged.push(line);
+	await guarded(async () => {
+		throw new Error("ai down");
+	});
+	console.error = original;
+
+	expect(logged.join("")).toContain("ai down");
 });
