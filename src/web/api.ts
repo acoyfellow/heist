@@ -1,5 +1,15 @@
 import { z } from "zod";
-import { type AttemptResult, attemptResult, type LeaderEntry, leaderboard } from "../worker/rules";
+import { type LevelNumber, type Progress, progress } from "../worker/levels";
+import {
+	type AttemptResult,
+	attemptResult,
+	type LeaderEntry,
+	type LevelStat,
+	leaderboard,
+	levelStats,
+	type SharedAttack,
+	sharedAttack,
+} from "../worker/rules";
 
 const errorBody = z.object({ error: z.string() });
 
@@ -27,12 +37,12 @@ function outcomeFrom(status: number, body: ResponseBody): AttemptOutcome {
 		: failure("The vault sent an answer that the page cannot read. Try again.");
 }
 
-export async function sendAttempt(handle: string, attack: string): Promise<AttemptOutcome> {
+export async function sendAttempt(handle: string, attack: string, level: LevelNumber): Promise<AttemptOutcome> {
 	try {
 		const res = await fetch("/api/attempt", {
 			method: "POST",
 			headers: { "content-type": "application/json" },
-			body: JSON.stringify({ handle, attack }),
+			body: JSON.stringify({ handle, attack, level }),
 		});
 
 		return outcomeFrom(res.status, responseBody.parse(await res.json().catch(() => null)));
@@ -51,6 +61,40 @@ export async function loadBoard(): Promise<LeaderEntry[] | null> {
 	} catch {
 		return null;
 	}
+}
+
+export async function loadStats(): Promise<LevelStat[]> {
+	try {
+		const res = await fetch("/api/stats");
+
+		return res.ok ? (levelStats.safeParse(await res.json()).data ?? []) : [];
+	} catch {
+		return [];
+	}
+}
+
+export async function loadShared(id: string): Promise<SharedAttack | null> {
+	try {
+		const res = await fetch(`/api/share/${encodeURIComponent(id)}`);
+
+		return res.ok ? (sharedAttack.safeParse(await res.json()).data ?? null) : null;
+	} catch {
+		return null;
+	}
+}
+
+const PROGRESS_KEY = "heist-progress";
+
+export function readProgress(): Progress {
+	try {
+		return progress.parse(JSON.parse(localStorage.getItem(PROGRESS_KEY) ?? "null"));
+	} catch {
+		return progress.parse(null);
+	}
+}
+
+export function saveProgress(state: Progress): void {
+	localStorage.setItem(PROGRESS_KEY, JSON.stringify(state));
 }
 
 export function beep(frequency: number, ms: number): void {

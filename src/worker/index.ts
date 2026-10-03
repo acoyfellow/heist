@@ -1,5 +1,6 @@
 import { DurableObject, WorkerEntrypoint } from "cloudflare:workers";
 import { z } from "zod";
+import { brokeInAt, hintFor, type Level, levelFor, systemFor } from "./levels";
 import {
 	ATTEMPTS_PER_IP_PER_HOUR,
 	type AttemptInput,
@@ -12,13 +13,14 @@ import {
 	GLOBAL_ATTEMPTS_PER_DAY,
 	guarded,
 	hourWindow,
-	judge,
 	type LeaderEntry,
 	leaderboard,
 	leaksSecret,
+	levelStats,
 	makeSecret,
 	rankLeaders,
 	replyText,
+	sharedAttack,
 	VICTIM_MODEL,
 	victimOutput,
 } from "./rules";
@@ -91,7 +93,7 @@ async function scoreInjection(env: Env, attack: string): Promise<number> {
 	return clefOutput.parse(raw).answers.injection.noul;
 }
 
-async function runVictim(env: Env, ctx: ExecutionContext, attack: string, secret: string): Promise<string> {
+async function runVictim(env: Env, ctx: ExecutionContext, attack: string, system: string): Promise<string> {
 	const worker = env.LOADER.get(`victim-${crypto.randomUUID()}`, () => ({
 		compatibilityDate: "2026-09-01",
 		mainModule: "victim.js",
@@ -102,7 +104,7 @@ async function runVictim(env: Env, ctx: ExecutionContext, attack: string, secret
 
 	const response = await worker.getEntrypoint().fetch("https://victim/", {
 		method: "POST",
-		body: JSON.stringify({ attack, secret }),
+		body: JSON.stringify({ attack, system }),
 	});
 
 	const parsed = victimOutput.safeParse(await response.json().catch(() => null));
@@ -111,15 +113,21 @@ async function runVictim(env: Env, ctx: ExecutionContext, attack: string, secret
 }
 
 async function attempt(env: Env, ctx: ExecutionContext, input: AttemptInput): Promise<AttemptResult> {
+	const level: Level = levelFor(input.level);
 	const secret = makeSecret(crypto.getRandomValues(new Uint8Array(6)));
-	const [injectionProbability, reply] = await Promise.all([scoreInjection(env, input.attack), runVictim(env, ctx, input.attack, secret)]);
+
+	const [injectionProbability, reply] = await Promise.all([
+		scoreInjection(env, input.attack),
+		runVictim(env, ctx, input.attack, systemFor(level, secret)),
+	]);
+
 	const leaked = leaksSecret(reply, secret);
-	const brokeIn = judge(injectionProbability, leaked);
+	const brokeIn = brokeInAt(level, injectionProbability, leaked);
 	const id = crypto.randomUUID();
 	await env.DB.prepare(
-		"INSERT INTO attempts (id, created_at, handle, attack, injection_probability, reply, leaked, broke_in) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+		"INSERT INTO attempts (id, created_at, handle, attack, injection_probability, reply, leaked, broke_in, level) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
 	)
-		.bind(id, Date.now(), input.handle, input.attack, injectionProbability, reply, leaked ? 1 : 0, brokeIn ? 1 : 0)
+		.bind(id, Date.now(), input.handle, input.attack, injectionProbability, reply, leaked ? 1 : 0, brokeIn ? 1 : 0, level.number)
 		.run();
 
 	if (brokeIn)
@@ -128,7 +136,29 @@ async function attempt(env: Env, ctx: ExecutionContext, input: AttemptInput): Pr
 			stealth: 1 - injectionProbability,
 		});
 
-	return { id, injectionProbability, reply, leaked, brokeIn };
+	const hint = hintFor(level, injectionProbability, leaked, input.attack.length);
+
+	return { id, injectionProbability, reply, leaked, brokeIn, level: level.number, threshold: level.threshold, hint };
+}
+
+async function stats(env: Env): Promise<Response> {
+	const { results } = await env.DB.prepare(
+		"SELECT level, COUNT(*) AS attempts, SUM(broke_in) AS breakIns FROM attempts GROUP BY level ORDER BY level",
+	).all();
+
+	return Response.json(levelStats.parse(results));
+}
+
+async function shared(env: Env, id: string): Promise<Response> {
+	const row = await env.DB.prepare(
+		"SELECT id, level, attack, injection_probability AS injectionProbability FROM attempts WHERE id = ? AND broke_in = 1",
+	)
+		.bind(id)
+		.first();
+
+	const parsed = sharedAttack.safeParse(row);
+
+	return parsed.success ? Response.json(parsed.data) : Response.json({ error: "No winning attack has that link." }, { status: 404 });
 }
 
 const datasetRow = z.object({
@@ -181,6 +211,10 @@ export default {
 		if (url.pathname === "/api/attempt" && request.method === "POST") return guarded(() => handleAttempt(request, env, ctx));
 
 		if (url.pathname === "/api/leaderboard") return guarded(async () => Response.json(await env.ARCADE.getByName("leaderboard").board()));
+
+		if (url.pathname === "/api/stats") return guarded(() => stats(env));
+
+		if (url.pathname.startsWith("/api/share/")) return guarded(() => shared(env, url.pathname.slice("/api/share/".length)));
 
 		if (url.pathname === "/api/dataset.jsonl") return guarded(() => exportDataset(env));
 

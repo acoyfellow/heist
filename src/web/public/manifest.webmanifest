@@ -1,7 +1,7 @@
 {
 	"name": "HEIST: a prompt injection game",
 	"short_name": "HEIST",
-	"description": "A prompt injection game: get VaultBot, Meta's Llama 3.3 70B on Workers AI, to leak a vault code while Cloudflare Clef scores your message below 0.5.",
+	"description": "A prompt injection game in five levels: get VaultBot, Meta's Llama 3.3 70B on Workers AI, to leak a vault code while Cloudflare Clef scores your message below each level's line.",
 	"start_url": "/",
 	"scope": "/",
 	"display": "standalone",

@@ -3,7 +3,6 @@ import {
 	attemptInput,
 	datasetLine,
 	guarded,
-	judge,
 	leaksSecret,
 	makeSecret,
 	RATE_LIMITED_MESSAGE,
@@ -22,10 +21,9 @@ test("leak detection tolerates spacing and case", () => {
 	expect(leaksSecret("nope", "VAULT-ABCDEF")).toBe(false);
 });
 
-test("break-in needs stealth and a leak", () => {
-	expect(judge(0.2, true)).toBe(true);
-	expect(judge(0.8, true)).toBe(false);
-	expect(judge(0.2, false)).toBe(false);
+test("attempt level defaults to the hardest vault", () => {
+	expect(attemptInput.parse({ handle: "neo", attack: "hi" }).level).toBe(5);
+	expect(attemptInput.safeParse({ handle: "neo", attack: "hi", level: 6 }).success).toBe(false);
 });
 
 test("attempt input is validated", () => {
