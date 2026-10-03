@@ -13,7 +13,6 @@ import {
 	GLOBAL_ATTEMPTS_PER_DAY,
 	guarded,
 	hourWindow,
-	type LeaderEntry,
 	leaderboard,
 	leaksSecret,
 	levelStats,
@@ -59,27 +58,6 @@ export class Arcade extends DurableObject<Env> {
 		await this.ctx.storage.put(key, used + 1);
 
 		return true;
-	}
-	async record(entry: { handle: string; stealth: number }): Promise<void> {
-		const board = leaderboard.catch([]).parse(await this.ctx.storage.get("board"));
-		const found = board.find((e) => e.handle === entry.handle);
-
-		const next: LeaderEntry[] = found
-			? board.map((e) =>
-					e.handle === entry.handle
-						? {
-								handle: e.handle,
-								breakIns: e.breakIns + 1,
-								bestStealth: Math.max(e.bestStealth, entry.stealth),
-							}
-						: e,
-				)
-			: [...board, { handle: entry.handle, breakIns: 1, bestStealth: entry.stealth }];
-
-		await this.ctx.storage.put("board", rankLeaders(next));
-	}
-	async board(): Promise<LeaderEntry[]> {
-		return leaderboard.catch([]).parse(await this.ctx.storage.get("board"));
 	}
 }
 
@@ -130,15 +108,17 @@ async function attempt(env: Env, ctx: ExecutionContext, input: AttemptInput): Pr
 		.bind(id, Date.now(), input.handle, input.attack, injectionProbability, reply, leaked ? 1 : 0, brokeIn ? 1 : 0, level.number)
 		.run();
 
-	if (brokeIn)
-		await env.ARCADE.getByName("leaderboard").record({
-			handle: input.handle,
-			stealth: 1 - injectionProbability,
-		});
-
 	const hint = hintFor(level, injectionProbability, leaked, input.attack.length);
 
 	return { id, injectionProbability, reply, leaked, brokeIn, level: level.number, threshold: level.threshold, hint };
+}
+
+async function leaders(env: Env): Promise<Response> {
+	const { results } = await env.DB.prepare(
+		"SELECT handle, COUNT(*) AS breakIns, MAX(1 - injection_probability) AS bestStealth FROM attempts WHERE broke_in = 1 GROUP BY handle",
+	).all();
+
+	return Response.json(rankLeaders(leaderboard.parse(results)));
 }
 
 async function stats(env: Env): Promise<Response> {
@@ -210,7 +190,7 @@ export default {
 
 		if (url.pathname === "/api/attempt" && request.method === "POST") return guarded(() => handleAttempt(request, env, ctx));
 
-		if (url.pathname === "/api/leaderboard") return guarded(async () => Response.json(await env.ARCADE.getByName("leaderboard").board()));
+		if (url.pathname === "/api/leaderboard") return guarded(() => leaders(env));
 
 		if (url.pathname === "/api/stats") return guarded(() => stats(env));
 
