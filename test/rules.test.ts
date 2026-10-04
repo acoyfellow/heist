@@ -3,6 +3,7 @@ import {
 	attemptInput,
 	datasetLine,
 	guarded,
+	leaderboard,
 	leaderEntry,
 	leaksSecret,
 	makeSecret,
@@ -89,4 +90,10 @@ test("an exception in the attempt path is logged for the operator", async () => 
 test("seeded flag from D1 becomes a boolean", () => {
 	expect(leaderEntry.parse({ handle: "a", breakIns: 1, bestStealth: 0.5, seeded: 1 }).seeded).toBe(true);
 	expect(leaderEntry.parse({ handle: "a", breakIns: 1, bestStealth: 0.5, seeded: 0 }).seeded).toBe(false);
+});
+
+test("leaderboard parses its own serialized output", () => {
+	const served = JSON.parse(JSON.stringify([leaderEntry.parse({ handle: "a", breakIns: 1, bestStealth: 0.5, seeded: 1 })]));
+
+	expect(leaderboard.parse(served)[0]?.seeded).toBe(true);
 });
