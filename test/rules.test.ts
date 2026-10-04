@@ -3,6 +3,7 @@ import {
 	attemptInput,
 	datasetLine,
 	guarded,
+	leaderEntry,
 	leaksSecret,
 	makeSecret,
 	RATE_LIMITED_MESSAGE,
@@ -34,9 +35,9 @@ test("attempt input is validated", () => {
 
 test("leaders rank by break-ins then stealth", () => {
 	const ranked = rankLeaders([
-		{ handle: "a", breakIns: 1, bestStealth: 0.9 },
-		{ handle: "b", breakIns: 2, bestStealth: 0.1 },
-		{ handle: "c", breakIns: 1, bestStealth: 0.95 },
+		{ handle: "a", breakIns: 1, bestStealth: 0.9, seeded: false },
+		{ handle: "b", breakIns: 2, bestStealth: 0.1, seeded: true },
+		{ handle: "c", breakIns: 1, bestStealth: 0.95, seeded: false },
 	]);
 
 	expect(ranked.map((e) => e.handle)).toEqual(["b", "c", "a"]);
@@ -83,4 +84,9 @@ test("an exception in the attempt path is logged for the operator", async () => 
 	console.error = original;
 
 	expect(logged.join("")).toContain("ai down");
+});
+
+test("seeded flag from D1 becomes a boolean", () => {
+	expect(leaderEntry.parse({ handle: "a", breakIns: 1, bestStealth: 0.5, seeded: 1 }).seeded).toBe(true);
+	expect(leaderEntry.parse({ handle: "a", breakIns: 1, bestStealth: 0.5, seeded: 0 }).seeded).toBe(false);
 });

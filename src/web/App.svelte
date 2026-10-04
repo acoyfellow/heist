@@ -135,7 +135,7 @@ const pct = (p: number) => `${(p * 100).toFixed(1)}%`;
 
   <div class="relative z-30 mx-auto max-w-3xl px-[max(1rem,env(safe-area-inset-left))] pt-[max(1.5rem,env(safe-area-inset-top))] pb-[max(2.5rem,env(safe-area-inset-bottom))]">
     <header class="flex flex-wrap items-center justify-between gap-3">
-      <h1 class="text-4xl font-black tracking-widest text-yellow-300 drop-shadow-[0_0_10px_rgba(253,224,71,0.9)] sm:text-5xl">HEIST</h1>
+      <h1 class="font-display text-4xl tracking-widest text-yellow-300 drop-shadow-[0_0_10px_rgba(253,224,71,0.9)] sm:text-5xl">HEIST</h1>
       <button class="min-h-11 min-w-11 border border-green-400 px-3 py-1 text-xs uppercase hover:bg-green-400 hover:text-black {focus}" aria-pressed={sound} onclick={() => (sound = !sound)}>
         sound: {sound ? "on" : "off"}
       </button>
@@ -221,7 +221,7 @@ const pct = (p: number) => `${(p * 100).toFixed(1)}%`;
 
     <section class="mt-6 bg-black/60 p-2" aria-labelledby="scores">
       <div class="flex flex-wrap items-center justify-between gap-2">
-        <h2 id="scores" class="text-xl font-bold text-yellow-300">HIGH SCORES</h2>
+        <h2 id="scores" class="font-display text-xl text-yellow-300">HIGH SCORES</h2>
         <a href="/api/dataset.jsonl" class="inline-flex min-h-11 items-center text-xs underline {focus}">Download break-in dataset (JSONL)</a>
       </div>
       <ol class="mt-2">
@@ -230,14 +230,14 @@ const pct = (p: number) => `${(p * 100).toFixed(1)}%`;
         {:else}
           {#each board as entry, i (entry.handle)}
             <li class="flex flex-wrap justify-between gap-2 border-b border-green-900 py-1">
-              <span class="break-all">{i + 1}. {entry.handle}</span><span>{entry.breakIns} break-ins, best stealth {(entry.bestStealth * 100).toFixed(0)}</span>
+              <span class="break-all">{i + 1}. {entry.handle}{#if entry.seeded}<span class="ml-2 border border-green-700 px-1 text-[10px] text-green-500">EVAL</span>{/if}</span><span>{entry.breakIns} break-ins, best stealth {(entry.bestStealth * 100).toFixed(0)}</span>
             </li>
           {:else}
             <li class="text-green-600">No break-ins yet.</li>
           {/each}
         {/if}
       </ol>
-      <p class="mt-2 text-xs text-green-500">Stealth is 100 minus the Clef score. Limits: 30 attempts per hour per address, 3000 per day for the site. The dataset has each winning message, its Clef score, and its time, not handles. Made by <a class="inline-flex min-h-11 items-center underline {focus}" href="https://coey.dev">Jordan Coeyman</a>.</p>
+      <p class="mt-2 text-xs text-green-500">Stealth is 100 minus the Clef score. Names marked EVAL are wins from the balance eval in receipts/006-balance.json, played against the same live models. Limits: 30 attempts per hour per address, 3000 per day for the site. The dataset has each winning message, its Clef score, and its time, not handles. Made by <a class="inline-flex min-h-11 items-center underline {focus}" href="https://coey.dev">Jordan Coeyman</a>.</p>
     </section>
   </div>
 </main>

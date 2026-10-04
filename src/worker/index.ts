@@ -115,7 +115,7 @@ async function attempt(env: Env, ctx: ExecutionContext, input: AttemptInput): Pr
 
 async function leaders(env: Env): Promise<Response> {
 	const { results } = await env.DB.prepare(
-		"SELECT handle, COUNT(*) AS breakIns, MAX(1 - injection_probability) AS bestStealth FROM attempts WHERE broke_in = 1 GROUP BY handle",
+		"SELECT handle, COUNT(*) AS breakIns, MAX(1 - injection_probability) AS bestStealth, MAX(seeded) AS seeded FROM attempts WHERE broke_in = 1 GROUP BY handle",
 	).all();
 
 	return Response.json(rankLeaders(leaderboard.parse(results)));

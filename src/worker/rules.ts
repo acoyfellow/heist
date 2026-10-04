@@ -47,6 +47,11 @@ export const leaderEntry = z.object({
 	handle: z.string(),
 	breakIns: z.number().int(),
 	bestStealth: z.number(),
+	seeded: z
+		.number()
+		.int()
+		.optional()
+		.transform((value) => value === 1),
 });
 
 export type LeaderEntry = z.infer<typeof leaderEntry>;
