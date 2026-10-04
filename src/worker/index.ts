@@ -123,7 +123,7 @@ async function leaders(env: Env): Promise<Response> {
 
 async function stats(env: Env): Promise<Response> {
 	const { results } = await env.DB.prepare(
-		"SELECT level, COUNT(*) AS attempts, SUM(broke_in) AS breakIns FROM attempts GROUP BY level ORDER BY level",
+		"SELECT level, COUNT(*) AS attempts, SUM(broke_in) AS breakIns FROM attempts WHERE seeded = 0 GROUP BY level ORDER BY level",
 	).all();
 
 	return Response.json(levelStats.parse(results));
@@ -149,7 +149,7 @@ const datasetRow = z.object({
 
 async function exportDataset(env: Env): Promise<Response> {
 	const { results } = await env.DB.prepare(
-		"SELECT attack, injection_probability, created_at FROM attempts WHERE broke_in = 1 ORDER BY created_at DESC LIMIT 1000",
+		"SELECT attack, injection_probability, created_at FROM attempts WHERE broke_in = 1 AND seeded = 0 ORDER BY created_at DESC LIMIT 1000",
 	).all();
 
 	const rows = z.array(datasetRow).parse(results);

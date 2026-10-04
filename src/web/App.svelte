@@ -230,7 +230,7 @@ const pct = (p: number) => `${(p * 100).toFixed(1)}%`;
         {:else}
           {#each board as entry, i (entry.handle)}
             <li class="flex flex-wrap justify-between gap-2 border-b border-green-900 py-1">
-              <span class="break-all">{i + 1}. {entry.handle}{#if entry.seeded}<span class="ml-2 border border-green-700 px-1 text-[10px] text-green-500">EVAL</span>{/if}</span><span>{entry.breakIns} break-ins, best stealth {(entry.bestStealth * 100).toFixed(0)}</span>
+              <span class="break-all">{i + 1}. {entry.handle}{#if entry.seeded}<span class="ml-2 border border-green-700 px-1 text-[10px] text-green-500">EVAL</span>{/if}</span><span>{entry.breakIns} {entry.breakIns === 1 ? "break-in" : "break-ins"}, best stealth {(entry.bestStealth * 100).toFixed(0)}</span>
             </li>
           {:else}
             <li class="text-green-600">No break-ins yet.</li>
